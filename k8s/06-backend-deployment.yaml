@@ -1,0 +1,43 @@
+apiVersion: apps/v1                  # Les Deployments sont dans le groupe d'API "apps", version v1
+kind: Deployment                     # Type d'objet : gère un ensemble de pods identiques et leurs mises à jour
+metadata:                            # Identification du Deployment
+  name: backend                      # Nom du Deployment
+  namespace: bijouterie              # Namespace où il est créé
+  labels: { app: backend }           # Étiquette posée sur le Deployment (pour le retrouver/filtrer)
+spec:                                # Description du comportement voulu
+  replicas: 2                        # 2 pods identiques : répartition de la charge + continuité si l'un tombe
+                                     # (possible car le backend ne stocke rien sur disque, les photos sont dans MySQL)
+  selector:                          # Comment le Deployment retrouve ses pods
+    matchLabels: { app: backend }    # Il gère les pods qui ont l'étiquette app=backend
+  template:                          # Modèle utilisé pour créer chaque pod
+    metadata:                        # Métadonnées du pod
+      labels: { app: backend }       # Étiquette du pod : doit correspondre au selector ci-dessus
+                                     # (c'est aussi ce que le Service "backend" cible)
+    spec:                            # Contenu du pod
+      containers:                    # Liste des conteneurs du pod
+        - name: backend              # Nom du conteneur
+          image: omar926/bijouterie-backend:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
+          ports:                     # Ports du conteneur
+            - containerPort: 3000    # L'API Node.js écoute sur 3000 (indicatif, documente le port)
+          envFrom:                   # Injecter d'un coup toutes les clés d'une source externe comme variables d'environnement
+            - configMapRef:          # 1re source : un ConfigMap (config non sensible)
+                name: backend-config #   "backend-config" : PORT, DB_HOST, DB_NAME, SHOP_NAME, CURRENCY, etc.
+            - secretRef:             # 2e source : un Secret (config sensible)
+                name: backend-secret #   "backend-secret" : DB_USER et DB_PASSWORD
+          env:                       # Variables d'environnement définies une par une
+            - name: POD_NAME         # Nom de la variable : le backend s'en sert pour l'afficher dans /api/config (servedBy)
+              valueFrom:             # La valeur n'est pas écrite en dur, elle est calculée par Kubernetes
+                fieldRef:            # Elle est lue depuis les informations du pod lui-même
+                  fieldPath: metadata.name   # Le nom du pod (ex. backend-7d9f8c-abcde) : permet de voir quel replica répond
+          livenessProbe:             # Test "vivant ?" : s'il échoue plusieurs fois, Kubernetes redémarre le conteneur
+            httpGet: { path: /api/health, port: 3000 }   # Requête HTTP GET sur /api/health ; réponse 2xx/3xx = OK
+                                     # (répond tant que le processus tourne, sans dépendre de la base)
+            initialDelaySeconds: 10  # Attendre 10 s après le démarrage avant le 1er test
+            periodSeconds: 10        # Tester toutes les 10 s
+          readinessProbe:            # Test "prêt ?" : tant qu'il échoue, le pod ne reçoit pas de trafic
+            httpGet: { path: /api/ready, port: 3000 }    # GET sur /api/ready : renvoie 503 si MySQL n'est pas joignable
+            initialDelaySeconds: 5   # Attendre 5 s avant le 1er test
+            periodSeconds: 5         # Tester toutes les 5 s (le pod est retiré du Service s'il devient non prêt)
+          resources:                 # Gestion des ressources CPU/mémoire
+            requests: { cpu: 100m, memory: 128Mi }   # Réservé au minimum : 0,1 CPU et 128 Mo (sert au placement du pod)
+            limits:   { cpu: 500m, memory: 256Mi }   # Maximum autorisé : 0,5 CPU et 256 Mo (au-delà : bridé ou tué)

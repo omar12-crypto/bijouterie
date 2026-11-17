@@ -1,0 +1,34 @@
+apiVersion: apps/v1                  # Les Deployments sont dans le groupe d'API "apps", version v1
+kind: Deployment                     # Type d'objet : gère un ensemble de pods identiques et leurs mises à jour
+metadata:                            # Identification du Deployment
+  name: frontend                     # Nom du Deployment
+  namespace: bijouterie              # Namespace où il est créé
+  labels: { app: frontend }          # Étiquette posée sur le Deployment (pour le retrouver/filtrer)
+spec:                                # Description du comportement voulu
+  replicas: 2                        # 2 pods Nginx identiques : répartition de la charge + continuité si l'un tombe
+  selector:                          # Comment le Deployment retrouve ses pods
+    matchLabels: { app: frontend }   # Il gère les pods qui ont l'étiquette app=frontend
+  template:                          # Modèle utilisé pour créer chaque pod
+    metadata:                        # Métadonnées du pod
+      labels: { app: frontend }      # Étiquette du pod : doit correspondre au selector ci-dessus
+                                     # (c'est aussi ce que le Service "frontend" cible)
+    spec:                            # Contenu du pod
+      containers:                    # Liste des conteneurs du pod
+        - name: frontend             # Nom du conteneur
+          image: omar926/bijouterie-frontend:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
+          ports:                     # Ports du conteneur
+            - containerPort: 80      # Nginx écoute sur le port 80 (indicatif, documente le port)
+          envFrom:                   # Injecter d'un coup toutes les clés d'une source externe comme variables d'environnement
+            - configMapRef:          # La source est un ConfigMap (il n'y a pas de Secret : rien de sensible côté frontend)
+                name: frontend-config  # "frontend-config" : BACKEND_URL (où relayer /api/*) et MAX_UPLOAD_SIZE (taille max d'un upload)
+          livenessProbe:             # Test "vivant ?" : s'il échoue plusieurs fois, Kubernetes redémarre le conteneur
+            httpGet: { path: /, port: 80 }   # Requête HTTP GET sur la page d'accueil ; réponse 2xx/3xx = Nginx fonctionne
+            initialDelaySeconds: 5   # Attendre 5 s après le démarrage avant le 1er test
+            periodSeconds: 10        # Tester toutes les 10 s
+          readinessProbe:            # Test "prêt ?" : tant qu'il échoue, le pod ne reçoit pas de trafic
+            httpGet: { path: /, port: 80 }   # Même requête sur la page d'accueil
+            initialDelaySeconds: 3   # Attendre 3 s avant le 1er test (Nginx démarre vite)
+            periodSeconds: 5         # Tester toutes les 5 s
+          resources:                 # Gestion des ressources CPU/mémoire
+            requests: { cpu: 50m,  memory: 64Mi }    # Réservé au minimum : 0,05 CPU et 64 Mo (sert au placement du pod)
+            limits:   { cpu: 250m, memory: 128Mi }   # Maximum autorisé : 0,25 CPU et 128 Mo (au-delà : bridé ou tué)
