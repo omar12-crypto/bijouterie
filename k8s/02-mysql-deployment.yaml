@@ -32,7 +32,7 @@ spec:                                # Description du comportement voulu
     spec:                            # Contenu du pod
       containers:                    # Liste des conteneurs du pod
         - name: mysql                # Nom du conteneur
-          image: bijouterie-mysql:v1   # Image Docker à lancer (remplacée par Jenkins avec le bon tag)
+          image: omar926/mysqlb:v1   # Image Docker à lancer (remplacée par Jenkins avec le bon tag)
           ports:                     # Ports du conteneur
             - containerPort: 3306    # MySQL écoute sur 3306 (indicatif, documente le port)
           env:                       # Variables d'environnement écrites directement ici

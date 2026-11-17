@@ -16,7 +16,7 @@ spec:                                # Description du comportement voulu
     spec:                            # Contenu du pod
       containers:                    # Liste des conteneurs du pod
         - name: backend              # Nom du conteneur
-          image: omar926/bijouterie-backend:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
+          image: omar926/backendb:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
           ports:                     # Ports du conteneur
             - containerPort: 3000    # L'API Node.js écoute sur 3000 (indicatif, documente le port)
           envFrom:                   # Injecter d'un coup toutes les clés d'une source externe comme variables d'environnement

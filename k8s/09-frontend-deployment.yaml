@@ -15,7 +15,7 @@ spec:                                # Description du comportement voulu
     spec:                            # Contenu du pod
       containers:                    # Liste des conteneurs du pod
         - name: frontend             # Nom du conteneur
-          image: omar926/bijouterie-frontend:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
+          image: omar926/frontendb:v1   # Image Docker à lancer (le tag est remplacé par Jenkins)
           ports:                     # Ports du conteneur
             - containerPort: 80      # Nginx écoute sur le port 80 (indicatif, documente le port)
           envFrom:                   # Injecter d'un coup toutes les clés d'une source externe comme variables d'environnement
