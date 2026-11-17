@@ -5,7 +5,7 @@ metadata:                            # Identification du Deployment
   namespace: bijouterie              # Namespace où il est créé
   labels: { app: frontend }          # Étiquette posée sur le Deployment (pour le retrouver/filtrer)
 spec:                                # Description du comportement voulu
-  replicas: 2                        # 2 pods Nginx identiques : répartition de la charge + continuité si l'un tombe
+  replicas: 3                        # 2 pods Nginx identiques : répartition de la charge + continuité si l'un tombe
   selector:                          # Comment le Deployment retrouve ses pods
     matchLabels: { app: frontend }   # Il gère les pods qui ont l'étiquette app=frontend
   template:                          # Modèle utilisé pour créer chaque pod
