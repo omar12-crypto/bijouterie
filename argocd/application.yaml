@@ -1,0 +1,25 @@
+# kubectl apply -f argocd/application.yaml  (Argo CD installé dans le namespace argocd)
+                                     # Commande pour créer cette Application dans le cluster (à lancer une seule fois à la main)
+apiVersion: argoproj.io/v1alpha1     # Groupe d'API fourni par Argo CD (pas par Kubernetes de base), version v1alpha1
+kind: Application                    # Type d'objet Argo CD : "cette application doit être déployée depuis ce dépôt Git"
+metadata:                            # Identification de l'Application
+  name: bijouterie                   # Nom de l'Application, tel qu'il apparaît dans l'interface d'Argo CD
+  namespace: argocd                  # Namespace d'Argo CD (et non "bijouterie") : l'objet Application vit chez Argo CD
+spec:                                # Description de ce qu'Argo CD doit faire
+  project: default                   # Projet Argo CD auquel appartient l'application ("default" existe déjà à l'installation)
+  source:                            # D'où viennent les manifests (la "source de vérité")
+    repoURL: https://github.com/omar12-crypto/bijouterie.git   # à adapter
+                                     # URL du dépôt Git à surveiller : remplacez par le vôtre
+    targetRevision: main             # Branche (ou tag/commit) à suivre : ici la branche main
+    path: k8s                        # Dossier du dépôt contenant les YAML : Argo CD applique tous ceux de k8s/
+  destination:                       # Où déployer
+    server: https://kubernetes.default.svc   # Le cluster où Argo CD tourne lui-même (adresse interne de l'API Kubernetes)
+    namespace: bijouterie            # Namespace de destination (utilisé si un manifest n'en précise pas)
+  syncPolicy:                        # Règles de synchronisation Git → cluster
+    automated:                       # Synchronisation automatique : pas besoin de cliquer sur "Sync"
+      prune: true                    # supprime ce qui n'est plus dans Git
+                                     # (si vous retirez un fichier de k8s/, la ressource est supprimée du cluster)
+      selfHeal: true                 # annule les modifications manuelles dans le cluster
+                                     # (si quelqu'un fait un kubectl edit, Argo CD remet l'état décrit dans Git)
+    syncOptions:                     # Options supplémentaires
+      - CreateNamespace=true         # Crée le namespace de destination s'il n'existe pas déjà

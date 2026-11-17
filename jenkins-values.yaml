@@ -1,0 +1,16 @@
+controller:
+  serviceType: NodePort        # accès depuis votre machine
+  nodePort: 32000              # Jenkins sera sur http://localhost:32000 (ou IP du nœud)
+  installPlugins:              # plugins utiles pour votre pipeline
+    - kubernetes
+    - workflow-aggregator      # pipelines
+    - git
+    - credentials-binding
+    - docker-workflow
+    - configuration-as-code
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits:   { cpu: "2",  memory: 2Gi }
+persistence:
+  enabled: true
+  size: 3Gi                    # garde la config si le pod redémarre

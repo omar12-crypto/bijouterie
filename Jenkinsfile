@@ -4,10 +4,10 @@ pipeline {                                   // Début du pipeline déclaratif J
   environment {                              // Variables d'environnement disponibles dans tout le pipeline
     DOCKERHUB_USER = 'omar926'                 // à adapter
                                              // Votre identifiant Docker Hub : préfixe des noms d'images
-    REGISTRY_CREDS = credentials('dockerhub-credentials')     // user + access token
+    REGISTRY_CREDS = credentials('cb1d760b-d56f-48a8-a69a-97c0443ff7a3')     // user + access token
                                              // Lit le credential Jenkins "dockerhub-credentials" et crée automatiquement
                                              // REGISTRY_CREDS_USR (identifiant) et REGISTRY_CREDS_PSW (mot de passe/token)
-    GIT_REPO       = 'github.com/VOTRE_COMPTE/VOTRE_DEPOT.git' // à adapter
+    GIT_REPO       = 'github.com/omar12-crypto/bijouterie.git' // à adapter
                                              // Adresse du dépôt (sans "https://") : sert au git push avec le token
     IMAGE_TAG      = "${env.BUILD_NUMBER}"   // Tag des images = numéro du build Jenkins (1, 2, 3...), unique à chaque build
   }
