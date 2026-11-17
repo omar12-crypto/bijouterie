@@ -12,7 +12,7 @@ pipeline {                                   // Début du pipeline déclaratif J
     IMAGE_TAG      = "${env.BUILD_NUMBER}"   // Tag des images = numéro du build Jenkins (1, 2, 3...), unique à chaque build
   }
 
-  options { timestamps(); disableConcurrentBuilds() }
+  options { disableConcurrentBuilds() }
                                              // timestamps() : horodate chaque ligne de log
                                              // disableConcurrentBuilds() : un seul build à la fois (évite deux push Git simultanés)
 

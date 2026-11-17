@@ -13,4 +13,4 @@ controller:
     limits:   { cpu: "2",  memory: 2Gi }
 persistence:
   enabled: true
-  size: 3Gi                    # garde la config si le pod redémarre
+  size: 8Gi                    # garde la config si le pod redémarre
